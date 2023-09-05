@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ow-mods/owml/master/schemas/manifest_schema.json",
   "filename": "qsb-fps.dll",
   "author": "Etherpod",
-  "name": "qsb-fps",
+  "name": "QSB First Person Shooter",
   "uniqueName": "Etherpod.qsb-fps",
   "version": "0.1.0",
   "owmlVersion": "2.9.6",
