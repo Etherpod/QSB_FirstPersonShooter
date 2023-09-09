@@ -55,7 +55,9 @@ public class qsbFPS : ModBehaviour
     {
         float raycastDist = 200f;
         PlayerCameraController player = FindObjectOfType<PlayerCameraController>();
-        if (Physics.Raycast(player.transform.position, player.transform.forward, out RaycastHit hit, 200))
+
+        Physics.queriesHitTriggers = false;
+        if (Physics.Raycast(player.transform.position, player.transform.forward, out RaycastHit hit, raycastDist))
         {
             if (!hit.collider.GetComponentInParent<PlayerCharacterController>() && hit.collider.gameObject.name == "REMOTE_PlayerDetector")
             {
@@ -70,7 +72,15 @@ public class qsbFPS : ModBehaviour
                 ModHelper.Console.WriteLine("Shot reciever has a player detector: " + 
                     (hit.collider.gameObject.name == "REMOTE_PlayerDetector"));
             }
+
+            if (hit.collider != null)
+            {
+                GameObject prefab = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunGroundHitEffect.prefab", this);
+                GameObject instantiated = Instantiate(prefab, hit.point, Quaternion.FromToRotation(Vector3.forward, hit.normal), hit.collider.transform.parent);
+                instantiated.SetActive(true);
+            }
         }
+        Physics.queriesHitTriggers = true;
     }
 
     private void Initialize()
