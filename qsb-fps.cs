@@ -2,26 +2,32 @@
 using OWML.ModHelper;
 using System;
 using UnityEngine;
+using HarmonyLib;
+using System.Reflection;
 
 namespace qsbFPS;
 public class qsbFPS : ModBehaviour
 {
     public static qsbFPS Instance;
+    public bool disableProbeLauncher = true;
     private bool inSolarSystem = false;
     IQSBAPI qsbAPI;
 
     private void Awake()
     {
         Instance = this;
+        Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
     }
 
     private void Start()
     {
+        ModHelper.Console.WriteLine("QSB FPS is loaded", MessageType.Success);
         Initialize();
 
         LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
         {
             if (loadScene != OWScene.SolarSystem) return;
+            ModHelper.Console.WriteLine("Loaded into solar system", MessageType.Success);
             inSolarSystem = true;
             qsbAPI.RegisterHandler<int>("deal-damage", MessageHandler);
         };
@@ -31,6 +37,7 @@ public class qsbFPS : ModBehaviour
     {
         if (inSolarSystem && OWInput.IsNewlyPressed(InputLibrary.probeLaunch, InputMode.All))
         {
+            ModHelper.Console.WriteLine($"Fired shot (time: {Time.time})", MessageType.Info);
             FireRaycast();
         }
     }
@@ -46,18 +53,22 @@ public class qsbFPS : ModBehaviour
 
     private void FireRaycast()
     {
+        float raycastDist = 200f;
         PlayerCameraController player = FindObjectOfType<PlayerCameraController>();
-        if (Physics.Raycast(player.transform.position, player.transform.forward, out RaycastHit hit, 50))
+        if (Physics.Raycast(player.transform.position, player.transform.forward, out RaycastHit hit, 200))
         {
             if (!hit.collider.GetComponentInParent<PlayerCharacterController>() && hit.collider.gameObject.name == "REMOTE_PlayerDetector")
             {
+                ModHelper.Console.WriteLine("Shot hit another player!", MessageType.Success);
                 qsbAPI.SendMessage("deal-damage", 10, receiveLocally: false);
             }
             else
             {
-                print("Didn't hit a player");
-                print("Reciever is my own character:" + hit.collider.GetComponentInParent<PlayerCharacterController>());
-                print("Reciever has a player detector:" + hit.collider.gameObject.name == "REMOTE_PlayerDetector");
+                ModHelper.Console.WriteLine("Shot didn't hit a player", MessageType.Info);
+                ModHelper.Console.WriteLine("Shot reciever is my own character: " + 
+                    (hit.collider.GetComponentInParent<PlayerCharacterController>() != null));
+                ModHelper.Console.WriteLine("Shot reciever has a player detector: " + 
+                    (hit.collider.gameObject.name == "REMOTE_PlayerDetector"));
             }
         }
     }
@@ -116,6 +127,7 @@ public class qsbFPS : ModBehaviour
         if (data is int)
         {
             int damage = Convert.ToInt32(data);
+            ModHelper.Console.WriteLine("Damage recieved: " + damage, MessageType.Success);
             PlayerResources pr = FindObjectOfType<PlayerResources>();
             pr.ApplyInstantDamage(damage, InstantDamageType.Impact);
         }
