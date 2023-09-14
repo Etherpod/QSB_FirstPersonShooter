@@ -4,14 +4,26 @@ using System;
 using UnityEngine;
 using HarmonyLib;
 using System.Reflection;
+using System.Collections;
+using UnityEngine.UI;
 
 namespace qsbFPS;
+
 public class qsbFPS : ModBehaviour
 {
     public static qsbFPS Instance;
+    public static IQSBAPI qsbAPI;
+    public static IMenuAPI menuFrameworkAPI;
+    public static bool inSolarSystem = false;
+
     public bool disableProbeLauncher = true;
-    private bool inSolarSystem = false;
-    IQSBAPI qsbAPI;
+    public bool customSpawn = true;
+
+    GameObject scriptHandler;
+    Transform particlesOffset;
+    Canvas overlayHUD;
+    Image hitReticle;
+    GameObject gunObject;
 
     private void Awake()
     {
@@ -21,72 +33,75 @@ public class qsbFPS : ModBehaviour
 
     private void Start()
     {
-        ModHelper.Console.WriteLine("QSB FPS is loaded", MessageType.Success);
         Initialize();
 
         LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
         {
             if (loadScene != OWScene.SolarSystem) return;
-            ModHelper.Console.WriteLine("Loaded into solar system", MessageType.Success);
-            inSolarSystem = true;
-            qsbAPI.RegisterHandler<int>("deal-damage", MessageHandler);
+            OnSystemLoad();
         };
+    }
+
+    private void OnSystemLoad()
+    {
+        inSolarSystem = true;
+
+        scriptHandler = Instantiate(new GameObject("Script Handler"), Vector3.zero, Quaternion.identity);
+        scriptHandler.AddComponent<GunController>();
+
+        GameObject prefab = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/Particles Offset Parent.prefab", this);
+        particlesOffset = Instantiate(prefab, Vector3.zero, Quaternion.identity).transform;
+        particlesOffset.gameObject.SetActive(true);
+        scriptHandler.GetComponent<GunController>().particlesOffset = particlesOffset;
+
+        qsbAPI.RegisterHandler<int>("deal-damage", MessageHandler);
+
+        SpawnArena();
+        SpawnGunHUD();
+        StartCoroutine(EquipSuitDelay());
     }
 
     private void Update()
     {
-        if (inSolarSystem && OWInput.IsNewlyPressed(InputLibrary.probeLaunch, InputMode.All))
-        {
-            ModHelper.Console.WriteLine($"Fired shot (time: {Time.time})", MessageType.Info);
-            FireRaycast();
-        }
+
     }
 
-    /*private void FireProjectile()
+    private IEnumerator EquipSuitDelay()
     {
-        GameObject prefab = AssetBundleUtilities.LoadPrefab("Assets/testbundle", "Assets/TestPrefab.prefab", this);
-        PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
-        GameObject prefabInstance = Instantiate(prefab, player.transform.position + player.transform.forward * 3, Quaternion.identity);
-        prefabInstance.SetActive(true);
-        prefabInstance.GetComponent<OWRigidbody>().AddImpulse(player.transform.forward * 50);
-    }*/
+        yield return new WaitForSeconds(2f);
+        FindObjectOfType<PlayerSpacesuit>().SuitUp(false, false, true);
+    }
 
-    private void FireRaycast()
+    private void SpawnArena()
     {
-        float raycastDist = 200f;
-        PlayerCameraController player = FindObjectOfType<PlayerCameraController>();
+        GameObject prefabArena = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/OW_PvpArena.prefab", this);
+        GameObject instantiatedArena = Instantiate(prefabArena, new Vector3(10000, 10000, 0), Quaternion.identity);
+        instantiatedArena.SetActive(true);
+    }
 
-        Physics.queriesHitTriggers = false;
-        if (Physics.Raycast(player.transform.position, player.transform.forward, out RaycastHit hit, raycastDist))
-        {
-            if (!hit.collider.GetComponentInParent<PlayerCharacterController>() && hit.collider.gameObject.name == "REMOTE_PlayerDetector")
-            {
-                ModHelper.Console.WriteLine("Shot hit another player!", MessageType.Success);
-                qsbAPI.SendMessage("deal-damage", 10, receiveLocally: false);
-            }
-            else
-            {
-                ModHelper.Console.WriteLine("Shot didn't hit a player", MessageType.Info);
-                ModHelper.Console.WriteLine("Shot reciever is my own character: " + 
-                    (hit.collider.GetComponentInParent<PlayerCharacterController>() != null));
-                ModHelper.Console.WriteLine("Shot reciever has a player detector: " + 
-                    (hit.collider.gameObject.name == "REMOTE_PlayerDetector"));
-            }
+    private void SpawnGunHUD()
+    {
+        GameObject prefabHUD = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunHUD.prefab", this);
+        overlayHUD = Instantiate(prefabHUD, Vector3.zero, Quaternion.identity).GetComponent<Canvas>();
+        hitReticle = overlayHUD.transform.GetChild(0).GetComponent<Image>();
+        scriptHandler.GetComponent<GunController>().hitReticle = hitReticle;
 
-            if (hit.collider != null)
-            {
-                GameObject prefab = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunGroundHitEffect.prefab", this);
-                GameObject instantiated = Instantiate(prefab, hit.point, Quaternion.FromToRotation(Vector3.forward, hit.normal), hit.collider.transform.parent);
-                instantiated.SetActive(true);
-            }
-        }
-        Physics.queriesHitTriggers = true;
+        overlayHUD.gameObject.SetActive(true);
+        hitReticle.enabled = false;
+
+        GameObject prefabGun = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunPivot.prefab", this);
+        PlayerCameraController playerCam = FindObjectOfType<PlayerCameraController>();
+        gunObject = Instantiate(prefabGun, playerCam.transform.position, playerCam.transform.rotation, playerCam.transform);
+        scriptHandler.GetComponent<GunController>().gunObject = gunObject;
+        scriptHandler.GetComponent<GunController>().gunFirePoint = gunObject.transform.GetChild(1).gameObject;
+
+        gunObject.SetActive(true);
     }
 
     private void Initialize()
     {
         qsbAPI = ModHelper.Interaction.TryGetModApi<IQSBAPI>("Raicuparta.QuantumSpaceBuddies");
-        var menuFrameworkAPI = ModHelper.Interaction.TryGetModApi<IMenuAPI>("_nebula.MenuFramework");
+        menuFrameworkAPI = ModHelper.Interaction.TryGetModApi<IMenuAPI>("_nebula.MenuFramework");
 
         LoadManager.OnCompleteSceneLoad += (oldScene, newScene) =>
         {
@@ -95,40 +110,8 @@ public class qsbFPS : ModBehaviour
                 return;
             }
 
-            //var button = menuFrameworkAPI.PauseMenu_MakeSimpleButton("QSB Api Test");
-
             qsbAPI.OnPlayerJoin().AddListener((uint playerId) => ModHelper.Console.WriteLine($"{playerId} joined the game!", MessageType.Success));
             qsbAPI.OnPlayerLeave().AddListener((uint playerId) => ModHelper.Console.WriteLine($"{playerId} left the game!", MessageType.Success));
-
-           /* button.onClick.AddListener(() =>
-            {
-                ModHelper.Console.WriteLine("TESTING QSB API!");
-
-                ModHelper.Console.WriteLine($"Local Player ID : {qsbAPI.GetLocalPlayerID()}");
-
-                ModHelper.Console.WriteLine("Player IDs :");
-
-                foreach (var playerID in qsbAPI.GetPlayerIDs())
-                {
-                    ModHelper.Console.WriteLine($" - id:{playerID} name:{qsbAPI.GetPlayerName(playerID)}");
-                }
-
-                ModHelper.Console.WriteLine("Setting custom data as \"QSB TEST STRING\"");
-                qsbAPI.SetCustomData(qsbAPI.GetLocalPlayerID(), "APITEST.TESTSTRING", "QSB TEST STRING");
-                ModHelper.Console.WriteLine($"Retreiving custom data : {qsbAPI.GetCustomData<string>(qsbAPI.GetLocalPlayerID(), "APITEST.TESTSTRING")}");
-
-                ModHelper.Console.WriteLine("Sending string message test...");
-                qsbAPI.RegisterHandler<string>("apitest-string", MessageHandler);
-                qsbAPI.SendMessage("apitest-string", "STRING MESSAGE", receiveLocally: true);
-
-                ModHelper.Console.WriteLine("Sending int message test...");
-                qsbAPI.RegisterHandler<int>("apitest-int", MessageHandler);
-                qsbAPI.SendMessage("apitest-int", 123, receiveLocally: true);
-
-                ModHelper.Console.WriteLine("Sending float message test...");
-                qsbAPI.RegisterHandler<float>("apitest-float", MessageHandler);
-                qsbAPI.SendMessage("apitest-float", 3.14f, receiveLocally: true);
-            });*/
         };
     }
 

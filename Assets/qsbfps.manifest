@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 1140697556
+CRC: 2890659633
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: af1ca5a222c2369aea290240c514225b
+    Hash: 6ca91cded9cd238ddb783bc931c38bb5
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 64510a3cd72920554ca1c94caa554491
+    Hash: bc3b8ba7537deb58bf9fa82dd3df5045
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -15,15 +15,89 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 21
   Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
 - Class: 28
   Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
 - Class: 48
+  Script: {instanceID: 0}
+- Class: 54
+  Script: {instanceID: 0}
+- Class: 64
+  Script: {instanceID: 0}
+- Class: 65
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 108
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: fbb2498122f7e23a2e87544333cb528f, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 8c0ac0a2d9d317025f60b61313425f54, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: d3e77ae3309b6f323de07b456da83fb0, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: f913c288c393f80a7e923fc1c775f4fb, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 6b78346a5a700308ccb7bbeeb31f9d5b, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 7f2e3f7cc6baeb3499f9963353d7b458, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 0439374de7aa5c9cadcc76f4256d44a9, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: c863958e16a8cce3eefc4ec691ab4cce, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 5e47f4857704e9e479d099179463c3a7, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 135
   Script: {instanceID: 0}
 - Class: 198
   Script: {instanceID: 0}
 - Class: 199
   Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+- Class: 222
+  Script: {instanceID: 0}
+- Class: 223
+  Script: {instanceID: 0}
+- Class: 224
+  Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
+- Assets/qsbFPS/Particles Offset Parent.prefab
+- Assets/qsbFPS/OW_PvpArena.fbx
+- Assets/qsbFPS/OW_PvpArena.prefab
+- Assets/qsbFPS/GunPlayerHitEffect.prefab
+- Assets/qsbFPS/GunPivot.prefab
+- Assets/qsbFPS/Gun.controller
+- Assets/qsbFPS/GunRecoil.anim
+- Assets/qsbFPS/PVPArenaSpawn.prefab
+- Assets/qsbFPS/AssaultRifle.prefab
+- Assets/qsbFPS/Smoke.png
+- Assets/Low Poly Guns/Models/Guns/assault1/assault1_diffuse.png
+- Assets/qsbFPS/GunFireEffect.prefab
 - Assets/qsbFPS/GunGroundHitEffect.prefab
+- Assets/qsbFPS/GunHUD.prefab
+- Assets/Low Poly Guns/Models/Guns/assault1/assault1.mat
+- Assets/Low Poly Guns/Models/Guns/assault1/assault1.fbx
+- Assets/Low Poly Guns/Models/Guns/assault1/assault1_normal.png
+- Assets/Spags Assets/Textures/Demo/white_hip.png
+- Assets/qsbFPS/Smoke.mat
 Dependencies: []
