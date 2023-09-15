@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -9,13 +10,27 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <NoWarn>MSB3270</NoWarn>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="OWML" Version="2.9.6" />
     <PackageReference Include="OuterWildsGameLibs" Version="1.1.13.457" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Mirror">
+      <HintPath>..\..\..\..\AppData\Roaming\OuterWildsModManager\OWML\Mods\Raicuparta.QuantumSpaceBuddies\Mirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="QSB">
+      <HintPath>..\..\..\..\AppData\Roaming\OuterWildsModManager\OWML\Mods\Raicuparta.QuantumSpaceBuddies\QSB.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="default-config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -27,7 +42,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="qsb-fps.csproj.user" />
   </ItemGroup>
+
 </Project>

@@ -49,12 +49,12 @@ public class qsbFPS : ModBehaviour
         scriptHandler = Instantiate(new GameObject("Script Handler"), Vector3.zero, Quaternion.identity);
         scriptHandler.AddComponent<GunController>();
 
+        qsbAPI.RegisterHandler<int>("deal-damage", MessageHandler);
+
         GameObject prefab = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/Particles Offset Parent.prefab", this);
         particlesOffset = Instantiate(prefab, Vector3.zero, Quaternion.identity).transform;
         particlesOffset.gameObject.SetActive(true);
         scriptHandler.GetComponent<GunController>().particlesOffset = particlesOffset;
-
-        qsbAPI.RegisterHandler<int>("deal-damage", MessageHandler);
 
         SpawnArena();
         SpawnGunHUD();

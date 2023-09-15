@@ -15,7 +15,7 @@ public class GunController : MonoBehaviour
     float reticleFadeTime = 0.75f;
     float fireCooldownTimer;
     float fireCooldown = 0.2f;
-    float damage;
+    int damage;
     float stationaryAccuracyVar = 0.015f;
     float movingAccuracyVar = 0.03f;
     float autoAccuracyVarMult = 2f;
@@ -32,14 +32,14 @@ public class GunController : MonoBehaviour
         {
             if (OWInput.IsNewlyPressed(InputLibrary.lockOn, InputMode.All))
             {
-                damage = 20f;
+                damage = 20;
                 fireCooldown = 0.2f;
                 autoFire = false;
                 FireRaycast();
             }
             else if (OWInput.IsPressed(InputLibrary.probeLaunch, InputMode.All))
             {
-                damage = 8f;
+                damage = 8;
                 fireCooldown = 0.08f;
                 autoFire = true;
                 FireRaycast();
@@ -134,7 +134,7 @@ public class GunController : MonoBehaviour
                 GameObject instantiated = Instantiate(prefab, hit.point, Quaternion.FromToRotation(Vector3.forward, hit.normal), particlesOffset);
                 instantiated.SetActive(true);
 
-                ReticleFade();
+                //ReticleFade();
             }
         }
     }
