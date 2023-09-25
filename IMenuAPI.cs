@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace qsbFPS;
+namespace QSBFPS;
 
 public interface IMenuAPI
 {

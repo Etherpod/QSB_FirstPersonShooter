@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
 using OWML.Common;
 using UnityEngine.UI;
+using QSB.Player.Messages;
+using System.Collections.Generic;
+using QSB.Messaging;
+using QSB.API;
 
-namespace qsbFPS;
+namespace QSBFPS;
 
 public class GunController : MonoBehaviour
 {
@@ -53,7 +57,7 @@ public class GunController : MonoBehaviour
 
             if (hitReticle.color.a <= 0)
             {
-                qsbFPS.Instance.ModHelper.Console.WriteLine("Reticle disabled");
+                //qsbFPS.Instance.ModHelper.Console.WriteLine("Reticle disabled");
                 hitReticle.enabled = false;
                 fadeReticle = false;
             }
@@ -108,8 +112,27 @@ public class GunController : MonoBehaviour
 
             if (!hit.collider.GetComponentInParent<PlayerCharacterController>() && hit.collider.gameObject.name == "REMOTE_PlayerDetector")
             {
-                qsbFPS.Instance.ModHelper.Console.WriteLine("Shot hit another player!", MessageType.Success);
+                /*qsbFPS.Instance.ModHelper.Console.WriteLine("Shot hit another player!", MessageType.Success);
                 qsbFPS.qsbAPI.SendMessage("deal-damage", damage, receiveLocally: false);
+                qsbFPS.Instance.ModHelper.Console.WriteLine("Dictionary contains hit player: " + 
+                    qsbFPS.Instance.idToGameObjects.ContainsValue(hit.collider.GetComponentInParent<QSB.Player.RemotePlayerVelocity>().gameObject));
+                qsbFPS.Instance.ModHelper.Console.WriteLine("Hit player: " +
+                    hit.collider.GetComponentInParent<QSB.Player.RemotePlayerVelocity>().gameObject);*/
+
+                qsbFPS.Instance.ModHelper.Console.WriteLine("Dictionary length: " + qsbFPS.Instance.idToGameObjects.Count);
+
+                foreach (KeyValuePair<uint, GameObject> pair in qsbFPS.Instance.idToGameObjects)
+                {
+                    qsbFPS.Instance.ModHelper.Console.WriteLine("Pair object: " + pair.Value);
+                    qsbFPS.Instance.ModHelper.Console.WriteLine("Pair ID: " + pair.Key);
+                    if (pair.Value == hit.collider.GetComponentInParent<QSB.Player.RemotePlayerVelocity>().gameObject)
+                    {
+                        qsbFPS.Instance.ModHelper.Console.WriteLine("Found valid pair object!", MessageType.Success);
+                        //new PlayerDamageMessage(pair.Key, damage).Send();
+                        qsbFPS.qsbAPI.SendMessage("deal-damage", damage, pair.Key, false);
+                        break;
+                    }
+                }
 
                 GameObject prefab = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunPlayerHitEffect.prefab", qsbFPS.Instance);
                 GameObject instantiated = Instantiate(prefab, hit.point, Quaternion.FromToRotation(Vector3.forward, hit.normal), particlesOffset);
@@ -141,8 +164,8 @@ public class GunController : MonoBehaviour
 
     private void ReticleFade()
     {
-        qsbFPS.Instance.ModHelper.Console.WriteLine("Reticle enabled");
-        qsbFPS.Instance.ModHelper.Console.WriteLine("Reticle object: " + hitReticle);
+        //qsbFPS.Instance.ModHelper.Console.WriteLine("Reticle enabled");
+        //qsbFPS.Instance.ModHelper.Console.WriteLine("Reticle object: " + hitReticle);
         hitReticle.color = new Color(hitReticle.color.r, hitReticle.color.g, hitReticle.color.b, 1f);
         currentReticleAlpha = 1f;
         hitReticle.enabled = true;

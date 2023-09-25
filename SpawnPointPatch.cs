@@ -3,7 +3,7 @@ using OWML.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace qsbFPS;
+namespace QSBFPS;
 
 [HarmonyPatch]
 public class SpawnPointPatch : MonoBehaviour

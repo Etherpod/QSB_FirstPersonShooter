@@ -6,8 +6,11 @@ using HarmonyLib;
 using System.Reflection;
 using System.Collections;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using QSB.RespawnSync;
+using System.Linq;
 
-namespace qsbFPS;
+namespace QSBFPS;
 
 public class qsbFPS : ModBehaviour
 {
@@ -25,6 +28,10 @@ public class qsbFPS : ModBehaviour
     Image hitReticle;
     GameObject gunObject;
 
+    public Dictionary<uint, GameObject> idToGameObjects = new Dictionary<uint, GameObject>();
+    public GameObject lastJoinedObject;
+    public uint lastJoinedID;
+
     private void Awake()
     {
         Instance = this;
@@ -33,7 +40,9 @@ public class qsbFPS : ModBehaviour
 
     private void Start()
     {
-        Initialize();
+        qsbAPI = ModHelper.Interaction.TryGetModApi<IQSBAPI>("Raicuparta.QuantumSpaceBuddies");
+        menuFrameworkAPI = ModHelper.Interaction.TryGetModApi<IMenuAPI>("_nebula.MenuFramework");
+        qsbAPI.RegisterRequiredForAllPlayers(this);
 
         LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
         {
@@ -56,20 +65,77 @@ public class qsbFPS : ModBehaviour
         particlesOffset.gameObject.SetActive(true);
         scriptHandler.GetComponent<GunController>().particlesOffset = particlesOffset;
 
+        QSB.QSBCore.DebugSettings.DisableLoopDeath = true;
+
+        qsbAPI.OnPlayerJoin().AddListener((uint playerID) =>
+        {
+            ModHelper.Console.WriteLine($"{playerID} joined the game!", MessageType.Success);
+            //StartCoroutine(WaitForLocalInstance(playerID));
+        });
+
+        qsbAPI.OnPlayerLeave().AddListener((uint playerId) => ModHelper.Console.WriteLine($"{playerId} left the game!", MessageType.Success));
+
         SpawnArena();
         SpawnGunHUD();
         StartCoroutine(EquipSuitDelay());
     }
 
-    private void Update()
+    private IEnumerator WaitForLocalInstance(uint playerID)
     {
+        ModHelper.Console.WriteLine("Waiting for local instance...");
+        yield return new WaitUntil(() => QSB.Player.TransformSync.PlayerTransformSync.LocalInstance != null);
 
+        ModHelper.Console.WriteLine("Local instance found!");
+
+        if (playerID == qsbAPI.GetLocalPlayerID())
+        {
+            ModHelper.Console.WriteLine($"It was just me ({playerID}) who joined... :(");
+            yield break;
+        }
+
+        ModHelper.Console.WriteLine("New player joined! ID: " + playerID);
+       /* new UpdateDictMessage(playerID, new KeyValuePair<uint, GameObject>(qsbAPI.GetLocalPlayerID(),
+            idToGameObjects[qsbAPI.GetLocalPlayerID()])).Send();*/
+
+        //lastJoinedID = playerID;
+        //StartCoroutine(RegisterIdObjectPair());
+    }
+
+    private IEnumerator RegisterIdObjectPair()
+    {
+        ModHelper.Console.WriteLine("Saved playerID");
+
+        if (lastJoinedObject == null)
+        {
+            ModHelper.Console.WriteLine("Player object is null");
+            yield return new WaitUntil(() => lastJoinedObject != null);
+        }
+
+        idToGameObjects.Add(lastJoinedID, lastJoinedObject);
+        ModHelper.Console.WriteLine("ID-object added");
+        lastJoinedObject = null;
     }
 
     private IEnumerator EquipSuitDelay()
     {
         yield return new WaitForSeconds(2f);
-        FindObjectOfType<PlayerSpacesuit>().SuitUp(false, false, true);
+        Locator.GetPlayerSuit().SuitUp(false, false, true);
+    }
+
+    public IEnumerator RespawnDelay()
+    {
+        FieldInfo field = typeof(RespawnManager).GetField("_playersPendingRespawn", BindingFlags.NonPublic | BindingFlags.Instance);
+        List<QSB.Player.PlayerInfo> _playersPendingRespawn = (List<QSB.Player.PlayerInfo>)field.GetValue(RespawnManager.Instance);
+
+        if (_playersPendingRespawn == null) 
+        {
+            ModHelper.Console.WriteLine("Didn't find the list somehow?", MessageType.Error);
+            yield break;
+        }
+
+        yield return new WaitUntil(() => qsbAPI.GetPlayerIDs().Count() - _playersPendingRespawn.Count <= 1);
+        yield return new WaitForSeconds(5f);
+        RespawnManager.Instance.RespawnSomePlayer();
     }
 
     private void SpawnArena()
@@ -77,6 +143,9 @@ public class qsbFPS : ModBehaviour
         GameObject prefabArena = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/OW_PvpArena.prefab", this);
         GameObject instantiatedArena = Instantiate(prefabArena, new Vector3(10000, 10000, 0), Quaternion.identity);
         instantiatedArena.SetActive(true);
+
+        GameObject respawner = instantiatedArena.GetComponentInChildren<MultiInteractReceiver>().gameObject;
+        respawner.AddComponent<ShipRecoveryPoint>();
     }
 
     private void SpawnGunHUD()
@@ -98,21 +167,10 @@ public class qsbFPS : ModBehaviour
         gunObject.SetActive(true);
     }
 
-    private void Initialize()
+    public void DealDamage(int damage)
     {
-        qsbAPI = ModHelper.Interaction.TryGetModApi<IQSBAPI>("Raicuparta.QuantumSpaceBuddies");
-        menuFrameworkAPI = ModHelper.Interaction.TryGetModApi<IMenuAPI>("_nebula.MenuFramework");
-
-        LoadManager.OnCompleteSceneLoad += (oldScene, newScene) =>
-        {
-            if (newScene != OWScene.SolarSystem)
-            {
-                return;
-            }
-
-            qsbAPI.OnPlayerJoin().AddListener((uint playerId) => ModHelper.Console.WriteLine($"{playerId} joined the game!", MessageType.Success));
-            qsbAPI.OnPlayerLeave().AddListener((uint playerId) => ModHelper.Console.WriteLine($"{playerId} left the game!", MessageType.Success));
-        };
+        PlayerResources pr = FindObjectOfType<PlayerResources>();
+        pr.ApplyInstantDamage(damage, InstantDamageType.Impact);
     }
 
     private void MessageHandler<T>(uint from, T data)

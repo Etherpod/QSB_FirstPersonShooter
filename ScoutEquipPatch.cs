@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace qsbFPS;
+namespace QSBFPS;
 
 [HarmonyPatch]
 public class ScoutEquipPatch : MonoBehaviour

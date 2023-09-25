@@ -2,7 +2,7 @@ using System;
 using OWML.Common;
 using UnityEngine.Events;
 
-namespace qsbFPS;
+namespace QSBFPS;
 
 public interface IQSBAPI
 {
