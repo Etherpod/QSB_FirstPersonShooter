@@ -1,10 +1,7 @@
 ﻿using UnityEngine;
 using OWML.Common;
 using UnityEngine.UI;
-using QSB.Player.Messages;
 using System.Collections.Generic;
-using QSB.Messaging;
-using QSB.API;
 
 namespace QSBFPS;
 
@@ -31,6 +28,11 @@ public class GunController : MonoBehaviour
 
     private void Update()
     {
+        if (!qsbFPS.Instance.gunHUD.enabled)
+        {
+            return;
+        }
+
         //Detect button press
         if (qsbFPS.inSolarSystem && canFire)
         {

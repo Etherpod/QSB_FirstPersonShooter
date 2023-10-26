@@ -9,6 +9,9 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using QSB.RespawnSync;
 using System.Linq;
+using QSB;
+using QSB.Player;
+using QSB.Player.TransformSync;
 
 namespace QSBFPS;
 
@@ -24,9 +27,12 @@ public class qsbFPS : ModBehaviour
 
     GameObject scriptHandler;
     Transform particlesOffset;
-    Canvas overlayHUD;
+    public Canvas gunHUD { private set; get; }
+    Canvas readyUpCanvas;
     Image hitReticle;
     GameObject gunObject;
+    float nameYOffset = 0;
+    public bool ignoreLockCursor { private set; get; }
 
     public Dictionary<uint, GameObject> idToGameObjects = new Dictionary<uint, GameObject>();
     public GameObject lastJoinedObject;
@@ -42,13 +48,17 @@ public class qsbFPS : ModBehaviour
     {
         qsbAPI = ModHelper.Interaction.TryGetModApi<IQSBAPI>("Raicuparta.QuantumSpaceBuddies");
         menuFrameworkAPI = ModHelper.Interaction.TryGetModApi<IMenuAPI>("_nebula.MenuFramework");
-        qsbAPI.RegisterRequiredForAllPlayers(this);
 
         LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
         {
             if (loadScene != OWScene.SolarSystem) return;
-            OnSystemLoad();
+            //OnSystemLoad();
         };
+    }
+
+    private void Update()
+    {
+        //ModHelper.Console.WriteLine("Mouse enabled: " + Cursor.visible);
     }
 
     private void OnSystemLoad()
@@ -65,12 +75,15 @@ public class qsbFPS : ModBehaviour
         particlesOffset.gameObject.SetActive(true);
         scriptHandler.GetComponent<GunController>().particlesOffset = particlesOffset;
 
-        QSB.QSBCore.DebugSettings.DisableLoopDeath = true;
+        QSBCore.DebugSettings.DisableLoopDeath = true;
 
         qsbAPI.OnPlayerJoin().AddListener((uint playerID) =>
         {
             ModHelper.Console.WriteLine($"{playerID} joined the game!", MessageType.Success);
-            //StartCoroutine(WaitForLocalInstance(playerID));
+            /*if (!qsbAPI.GetIsHost())
+            {
+                AddPlayerNameToList(qsbAPI.GetPlayerName(playerID));
+            }*/
         });
 
         qsbAPI.OnPlayerLeave().AddListener((uint playerId) => ModHelper.Console.WriteLine($"{playerId} left the game!", MessageType.Success));
@@ -80,41 +93,20 @@ public class qsbFPS : ModBehaviour
         StartCoroutine(EquipSuitDelay());
     }
 
-    private IEnumerator WaitForLocalInstance(uint playerID)
-    {
-        ModHelper.Console.WriteLine("Waiting for local instance...");
-        yield return new WaitUntil(() => QSB.Player.TransformSync.PlayerTransformSync.LocalInstance != null);
+    /* private IEnumerator RegisterIdObjectPair()
+     {
+         ModHelper.Console.WriteLine("Saved playerID");
 
-        ModHelper.Console.WriteLine("Local instance found!");
+         if (lastJoinedObject == null)
+         {
+             ModHelper.Console.WriteLine("Player object is null");
+             yield return new WaitUntil(() => lastJoinedObject != null);
+         }
 
-        if (playerID == qsbAPI.GetLocalPlayerID())
-        {
-            ModHelper.Console.WriteLine($"It was just me ({playerID}) who joined... :(");
-            yield break;
-        }
-
-        ModHelper.Console.WriteLine("New player joined! ID: " + playerID);
-       /* new UpdateDictMessage(playerID, new KeyValuePair<uint, GameObject>(qsbAPI.GetLocalPlayerID(),
-            idToGameObjects[qsbAPI.GetLocalPlayerID()])).Send();*/
-
-        //lastJoinedID = playerID;
-        //StartCoroutine(RegisterIdObjectPair());
-    }
-
-    private IEnumerator RegisterIdObjectPair()
-    {
-        ModHelper.Console.WriteLine("Saved playerID");
-
-        if (lastJoinedObject == null)
-        {
-            ModHelper.Console.WriteLine("Player object is null");
-            yield return new WaitUntil(() => lastJoinedObject != null);
-        }
-
-        idToGameObjects.Add(lastJoinedID, lastJoinedObject);
-        ModHelper.Console.WriteLine("ID-object added");
-        lastJoinedObject = null;
-    }
+         idToGameObjects.Add(lastJoinedID, lastJoinedObject);
+         ModHelper.Console.WriteLine("ID-object added");
+         lastJoinedObject = null;
+     }*/
 
     private IEnumerator EquipSuitDelay()
     {
@@ -127,7 +119,7 @@ public class qsbFPS : ModBehaviour
         FieldInfo field = typeof(RespawnManager).GetField("_playersPendingRespawn", BindingFlags.NonPublic | BindingFlags.Instance);
         List<QSB.Player.PlayerInfo> _playersPendingRespawn = (List<QSB.Player.PlayerInfo>)field.GetValue(RespawnManager.Instance);
 
-        if (_playersPendingRespawn == null) 
+        if (_playersPendingRespawn == null)
         {
             ModHelper.Console.WriteLine("Didn't find the list somehow?", MessageType.Error);
             yield break;
@@ -143,20 +135,18 @@ public class qsbFPS : ModBehaviour
         GameObject prefabArena = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/OW_PvpArena.prefab", this);
         GameObject instantiatedArena = Instantiate(prefabArena, new Vector3(10000, 10000, 0), Quaternion.identity);
         instantiatedArena.SetActive(true);
-
-        GameObject respawner = instantiatedArena.GetComponentInChildren<MultiInteractReceiver>().gameObject;
-        respawner.AddComponent<ShipRecoveryPoint>();
     }
 
     private void SpawnGunHUD()
     {
         GameObject prefabHUD = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunHUD.prefab", this);
-        overlayHUD = Instantiate(prefabHUD, Vector3.zero, Quaternion.identity).GetComponent<Canvas>();
-        hitReticle = overlayHUD.transform.GetChild(0).GetComponent<Image>();
+        gunHUD = Instantiate(prefabHUD, Vector3.zero, Quaternion.identity).GetComponent<Canvas>();
+        hitReticle = gunHUD.transform.GetChild(0).GetComponent<Image>();
         scriptHandler.GetComponent<GunController>().hitReticle = hitReticle;
 
-        overlayHUD.gameObject.SetActive(true);
+        gunHUD.gameObject.SetActive(true);
         hitReticle.enabled = false;
+        gunHUD.enabled = false;
 
         GameObject prefabGun = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunPivot.prefab", this);
         PlayerCameraController playerCam = FindObjectOfType<PlayerCameraController>();
@@ -165,6 +155,67 @@ public class qsbFPS : ModBehaviour
         scriptHandler.GetComponent<GunController>().gunFirePoint = gunObject.transform.GetChild(1).gameObject;
 
         gunObject.SetActive(true);
+    }
+
+    /*private void AddPlayerNameToList(string name)
+    {
+        GameObject namePrefab = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/JoinedPlayerName.prefab", this);
+        GameObject instantiated = Instantiate(namePrefab, Vector3.zero, Quaternion.identity, readyUpCanvas.transform.GetChild(2));
+        nameYOffset -= 70f;
+        instantiated.GetComponent<RectTransform>().position = new Vector2(Screen.width / 2, Screen.height / 2 + nameYOffset);
+
+        Sprite sprite = AssetBundleUtilities.Load<Sprite>("Assets/qsbfps", "Assets/qsbFPS/EmptyCheckbox.png", this);
+        instantiated.GetComponentInChildren<Image>().sprite = sprite;
+        instantiated.GetComponentInChildren<Text>().text = name;
+        instantiated.SetActive(true);
+    }*/
+
+    /*public void SpawnReadyUpCanvas()
+    {
+        GameObject prefabCanvas = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/ReadyUpScreen.prefab", this);
+        readyUpCanvas = Instantiate(prefabCanvas, Vector3.zero, Quaternion.identity).GetComponent<Canvas>();
+        readyUpCanvas.gameObject.SetActive(true);
+        ignoreLockCursor = true;
+        readyUpCanvas.GetComponentInChildren<Button>().onClick.AddListener(CallWakeUp);
+        //StartCoroutine(WaitForIDAndName());
+    }*/
+
+    /*public void AddLocalToPlayerList()
+    {
+        if (qsbAPI.GetIsHost())
+        {
+            ModHelper.Console.WriteLine(qsbAPI.GetLocalPlayerID() + " is the host");
+            AddPlayerNameToList(qsbAPI.GetPlayerName(qsbAPI.GetLocalPlayerID()));
+        }
+        else
+        {
+            ModHelper.Console.WriteLine(qsbAPI.GetLocalPlayerID() + " is not the host (joining)");
+            LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
+            {
+                if (loadScene != OWScene.SolarSystem) return;
+                ModHelper.Console.WriteLine(qsbAPI.GetLocalPlayerID() + " is not the host");
+                AddPlayerNameToList(qsbAPI.GetPlayerName(qsbAPI.GetLocalPlayerID()));
+            };
+        }
+    }*/
+
+    /*private IEnumerator WaitForIDAndName()
+    {
+        yield return new WaitUntil(() => PlayerTransformSync.LocalInstance != null 
+        && QSBPlayerManager.LocalPlayer.Name != null);
+        AddLocalToPlayerList();
+    }*/
+
+    private void CallWakeUp()
+    {
+        PlayerCameraEffectController script = FindObjectOfType<PlayerCameraEffectController>();
+        ModHelper.Console.WriteLine("Camera Effect Controller: " + FindObjectOfType<PlayerCameraEffectController>());
+        script._waitForWakeInput = false;
+        LateInitializerManager.pauseOnInitialization = false;
+        OWTime.Unpause(OWTime.PauseType.Sleeping);
+        ignoreLockCursor = false;
+        readyUpCanvas.enabled = false;
+        script.WakeUp();
     }
 
     public void DealDamage(int damage)

@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 3373664368
+CRC: 3621837169
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: e796a6b7bf0777e10b4fb7f665e89a38
+    Hash: 7ce287bb3fa77bc25ea4b513e459d05f
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 187df04bf3dc213e6613fff963004cbf
+    Hash: 37909b8f29aa7a9b679671daba82561e
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -40,6 +40,8 @@ ClassTypes:
 - Class: 108
   Script: {instanceID: 0}
 - Class: 114
+  Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+- Class: 114
   Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
@@ -48,17 +50,19 @@ ClassTypes:
 - Class: 114
   Script: {fileID: 11500000, guid: fbb2498122f7e23a2e87544333cb528f, type: 3}
 - Class: 114
+  Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+- Class: 114
   Script: {fileID: 11500000, guid: dab2fbc1d63988697a57c20e75208116, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 8c0ac0a2d9d317025f60b61313425f54, type: 3}
-- Class: 114
-  Script: {fileID: 11500000, guid: b916c1d32b4d92e1af466758266b9b36, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: d3e77ae3309b6f323de07b456da83fb0, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: a223d69493f03f4a8e6bda998c52d250, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: f913c288c393f80a7e923fc1c775f4fb, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 6b78346a5a700308ccb7bbeeb31f9d5b, type: 3}
 - Class: 114
@@ -72,6 +76,8 @@ ClassTypes:
 - Class: 114
   Script: {fileID: 11500000, guid: 5e47f4857704e9e479d099179463c3a7, type: 3}
 - Class: 115
+  Script: {instanceID: 0}
+- Class: 128
   Script: {instanceID: 0}
 - Class: 135
   Script: {instanceID: 0}
@@ -92,6 +98,7 @@ Assets:
 - Assets/qsbFPS/Particles Offset Parent.prefab
 - Assets/qsbFPS/OW_PvpArena.fbx
 - Assets/qsbFPS/OW_PvpArena.prefab
+- Assets/qsbFPS/ReadyUpScreen.prefab
 - Assets/qsbFPS/GunPlayerHitEffect.prefab
 - Assets/qsbFPS/GunPivot.prefab
 - Assets/qsbFPS/Gun.controller
@@ -103,9 +110,13 @@ Assets:
 - Assets/qsbFPS/GunFireEffect.prefab
 - Assets/qsbFPS/GunGroundHitEffect.prefab
 - Assets/qsbFPS/GunHUD.prefab
+- Assets/qsbFPS/FilledCheckbox.png
+- Assets/qsbFPS/JoinedPlayerName.prefab
 - Assets/Low Poly Guns/Models/Guns/assault1/assault1.mat
 - Assets/Low Poly Guns/Models/Guns/assault1/assault1.fbx
 - Assets/Low Poly Guns/Models/Guns/assault1/assault1_normal.png
 - Assets/Spags Assets/Textures/Demo/white_hip.png
 - Assets/qsbFPS/Smoke.mat
+- Assets/qsbFPS/Asteroid.fbx
+- Assets/qsbFPS/EmptyCheckbox.png
 Dependencies: []

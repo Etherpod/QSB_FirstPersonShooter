@@ -1,5 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
     <OutputPath>$(AppData)\OuterWildsModManager\OWML\Mods\Etherpod.qsb-fps</OutputPath>
+    <!--<UnityDllsDir>D:\Production\GitHub\ExportedProject\OuterWilds\ExportedProject\Assets\EtherpodStuff\DLLs</UnityDllsDir>-->
   </PropertyGroup>
 </Project>

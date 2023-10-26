@@ -47,4 +47,8 @@
     <Content Include="qsb-fps.csproj.user" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('$(UnityDllsDir)')">
+    <Exec Command="xcopy /y &quot;$(TargetPath)&quot; &quot;$(UnityDllsDir)&quot;" />
+  </Target>
+
 </Project>
