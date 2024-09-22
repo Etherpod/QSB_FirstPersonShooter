@@ -52,7 +52,7 @@ public class qsbFPS : ModBehaviour
         LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
         {
             if (loadScene != OWScene.SolarSystem) return;
-            //OnSystemLoad();
+            OnSystemLoad();
         };
     }
 
@@ -146,7 +146,7 @@ public class qsbFPS : ModBehaviour
 
         gunHUD.gameObject.SetActive(true);
         hitReticle.enabled = false;
-        gunHUD.enabled = false;
+        //gunHUD.enabled = false;
 
         GameObject prefabGun = AssetBundleUtilities.LoadPrefab("Assets/qsbfps", "Assets/qsbFPS/GunPivot.prefab", this);
         PlayerCameraController playerCam = FindObjectOfType<PlayerCameraController>();
